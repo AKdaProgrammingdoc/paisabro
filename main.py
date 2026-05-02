@@ -1,6 +1,5 @@
-from fastapi import FastAPI, Form, Request
-from fastapi.responses import PlainTextResponse
-from twilio.rest import Client as TwilioClient
+from fastapi import FastAPI, Form
+from fastapi.responses import Response
 from twilio.twiml.messaging_response import MessagingResponse
 import os
 from dotenv import load_dotenv
@@ -10,7 +9,7 @@ load_dotenv()
 
 app = FastAPI()
 
-@app.post("/webhook", response_class=PlainTextResponse)
+@app.post("/webhook")
 async def webhook(
     From: str = Form(...),
     Body: str = Form(...),
@@ -20,7 +19,7 @@ async def webhook(
 ):
     user_phone = From.replace("whatsapp:", "")
     message_body = Body.strip()
-    
+
     has_media = int(NumMedia) > 0
     media_url = MediaUrl0 if has_media else None
     media_type = MediaContentType0 if has_media else None
@@ -34,7 +33,8 @@ async def webhook(
 
     resp = MessagingResponse()
     resp.message(reply)
-    return str(resp)
+    
+    return Response(content=str(resp), media_type="application/xml")
 
 @app.get("/")
 def root():
